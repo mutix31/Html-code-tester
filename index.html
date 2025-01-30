@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML, CSS, JS Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+        }
+        .input-section, .output-section {
+            flex: 1;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .input-section {
+            display: flex;
+            flex-direction: column;
+        }
+        .output-section {
+            display: flex;
+            flex-direction: column;
+        }
+        textarea {
+            width: 100%;
+            height: 80%;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: none;
+            font-size: 14px;
+            background-color: #f9f9f9;
+        }
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background-color: white;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .close-btn {
+            background-color: #dc3545;
+        }
+        .close-btn:hover {
+            background-color: #c82333;
+        }
+        .clear-btn {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .clear-btn:hover {
+            background-color: #e0a800;
+        }
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            display: none;
+        }
+        .popup.active {
+            display: block;
+        }
+        .popup input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        .popup button {
+            width: 100%;
+        }
+        .fullscreen-toolbar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input-section">
+            <h2>Input</h2>
+            <div class="toolbar">
+                <button onclick="loadHtmlFile()">HTML Dosyası Yükle</button>
+                <button onclick="loadHtmlFromUrl()">URL'den HTML Yükle</button>
+                <button class="clear-btn" onclick="clearInputs()">Temizle</button>
+            </div>
+            <textarea id="html-input" placeholder="HTML kodu buraya yapıştırın..."></textarea>
+            <textarea id="css-input" placeholder="CSS kodu buraya yapıştırın..."></textarea>
+            <textarea id="js-input" placeholder="JavaScript kodu buraya yapıştırın..."></textarea>
+            <button onclick="updateOutput()">RUN</button>
+        </div>
+        <div class="output-section">
+            <h2>Output</h2>
+            <div class="toolbar">
+                <button onclick="toggleFullscreen()">Tam Ekran</button>
+                <button onclick="saveAsImage()">Görsel Olarak Kaydet</button>
+                <button onclick="downloadHtml()">HTML Olarak İndir</button>
+                <button onclick="copyHtml()">HTML Kopyala</button>
+            </div>
+            <iframe id="output-frame" style="width: 100%; height: 80%; border: 1px solid #ddd; border-radius: 8px;"></iframe>
+        </div>
+    </div>
+
+    <!-- Popup for URL input -->
+    <div class="popup" id="url-popup">
+        <input type="text" id="url-input" placeholder="HTML dosyasının URL'sini girin...">
+        <button onclick="loadHtmlFromUrlConfirm()">Yükle</button>
+        <button class="close-btn" onclick="closePopup()">Kapat</button>
+    </div>
+
+    <!-- Fullscreen toolbar -->
+    <div class="fullscreen-toolbar" id="fullscreen-toolbar" style="display: none;">
+        <button class="close-btn" onclick="toggleFullscreen()">Tam Ekranı Kapat</button>
+    </div>
+
+    <script>
+        function updateOutput() {
+            const html = document.getElementById('html-input').value;
+            const css = document.getElementById('css-input').value;
+            const js = document.getElementById('js-input').value;
+
+            const iframe = document.getElementById('output-frame');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            iframeDoc.open();
+            iframeDoc.write(`
+                <!DOCTYPE html>
+                <html lang="tr">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>${css}</style>
+                </head>
+                <body>
+                    ${html}
+                    <script>${js}<\/script>
+                </body>
+                </html>
+            `);
+            iframeDoc.close();
+        }
+
+        function toggleFullscreen() {
+            const iframe = document.getElementById('output-frame');
+            const fullscreenToolbar = document.getElementById('fullscreen-toolbar');
+            iframe.classList.toggle('fullscreen');
+            fullscreenToolbar.style.display = iframe.classList.contains('fullscreen') ? 'block' : 'none';
+        }
+
+        function saveAsImage() {
+            const iframe = document.getElementById('output-frame');
+            html2canvas(iframe.contentDocument.body).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'output.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        function downloadHtml() {
+            const html = document.getElementById('html-input').value;
+            const css = document.getElementById('css-input').value;
+            const js = document.getElementById('js-input').value;
+
+            const blob = new Blob([`
+                <!DOCTYPE html>
+                <html lang="tr">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>${css}</style>
+                </head>
+                <body>
+                    ${html}
+                    <script>${js}<\/script>
+                </body>
+                </html>
+            `], { type: 'text/html' });
+
+            const link = document.createElement('a');
+            link.download = 'output.html';
+            link.href = URL.createObjectURL(blob);
+            link.click();
+        }
+
+        function copyHtml() {
+            const html = document.getElementById('html-input').value;
+            const css = document.getElementById('css-input').value;
+            const js = document.getElementById('js-input').value;
+
+            const fullHtml = `
+                <!DOCTYPE html>
+                <html lang="tr">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>${css}</style>
+                </head>
+                <body>
+                    ${html}
+                    <script>${js}<\/script>
+                </body>
+                </html>
+            `;
+
+            navigator.clipboard.writeText(fullHtml).then(() => {
+                alert('HTML kopyalandı!');
+            });
+        }
+
+        function loadHtmlFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.html';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('html-input').value = e.target.result;
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function loadHtmlFromUrl() {
+            const popup = document.getElementById('url-popup');
+            popup.classList.add('active');
+        }
+
+        function loadHtmlFromUrlConfirm() {
+            const url = document.getElementById('url-input').value;
+            if (url) {
+                fetch(url)
+                    .then(response => response.text())
+                    .then(data => {
+                        document.getElementById('html-input').value = data;
+                        closePopup();
+                    })
+                    .catch(() => alert('URL yüklenirken bir hata oluştu.'));
+            }
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('url-popup');
+            popup.classList.remove('active');
+        }
+
+        function clearInputs() {
+            document.getElementById('html-input').value = '';
+            document.getElementById('css-input').value = '';
+            document.getElementById('js-input').value = '';
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>
