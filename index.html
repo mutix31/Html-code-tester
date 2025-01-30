@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML, CSS, JS Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            padding: 10px;
+            gap: 10px;
+        }
+        .input-section, .output-section {
+            flex: 1;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .input-section {
+            display: flex;
+            flex-direction: column;
+        }
+        .output-section {
+            display: flex;
+            flex-direction: column;
+        }
+        textarea {
+            width: 100%;
+            height: 80%;
+            font-family: monospace;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: none;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        h2 {
+            margin-top: 0;
+        }
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background-color: white;
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input-section">
+            <h2>Input</h2>
+            <div class="toolbar">
+                <button onclick="loadHtmlFile()">HTML Dosyası Yükle</button>
+                <button onclick="loadHtmlFromUrl()">URL'den HTML Yükle</button>
+            </div>
+            <textarea id="html-input" placeholder="HTML kodu buraya yapıştırın..."></textarea>
+            <textarea id="css-input" placeholder="CSS kodu buraya yapıştırın..."></textarea>
+            <textarea id="js-input" placeholder="JavaScript kodu buraya yapıştırın..."></textarea>
+            <button onclick="updateOutput()">RUN</button>
+        </div>
+        <div class="output-section">
+            <h2>Output</h2>
+            <div class="toolbar">
+                <button onclick="toggleFullscreen()">Tam Ekran</button>
+                <button onclick="saveAsImage()">Görsel Olarak Kaydet</button>
+                <button onclick="downloadHtml()">HTML Olarak İndir</button>
+                <button onclick="copyHtml()">HTML Kopyala</button>
+            </div>
+            <iframe id="output-frame" style="width: 100%; height: 80%; border: 1px solid #ccc; border-radius: 4px;"></iframe>
+        </div>
+    </div>
+
+    <script>
+        function updateOutput() {
+            const html = document.getElementById('html-input').value;
+            const css = document.getElementById('css-input').value;
+            const js = document.getElementById('js-input').value;
+
+            const iframe = document.getElementById('output-frame');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            iframeDoc.open();
+            iframeDoc.write(`
+                <!DOCTYPE html>
+                <html lang="tr">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>${css}</style>
+                </head>
+                <body>
+                    ${html}
+                    <script>${js}<\/script>
+                </body>
+                </html>
+            `);
+            iframeDoc.close();
+        }
+
+        function toggleFullscreen() {
+            const iframe = document.getElementById('output-frame');
+            iframe.classList.toggle('fullscreen');
+        }
+
+        function saveAsImage() {
+            const iframe = document.getElementById('output-frame');
+            html2canvas(iframe.contentDocument.body).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'output.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        function downloadHtml() {
+            const html = document.getElementById('html-input').value;
+            const css = document.getElementById('css-input').value;
+            const js = document.getElementById('js-input').value;
+
+            const blob = new Blob([`
+                <!DOCTYPE html>
+                <html lang="tr">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>${css}</style>
+                </head>
+                <body>
+                    ${html}
+                    <script>${js}<\/script>
+                </body>
+                </html>
+            `], { type: 'text/html' });
+
+            const link = document.createElement('a');
+            link.download = 'output.html';
+            link.href = URL.createObjectURL(blob);
+            link.click();
+        }
+
+        function copyHtml() {
+            const html = document.getElementById('html-input').value;
+            const css = document.getElementById('css-input').value;
+            const js = document.getElementById('js-input').value;
+
+            const fullHtml = `
+                <!DOCTYPE html>
+                <html lang="tr">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>${css}</style>
+                </head>
+                <body>
+                    ${html}
+                    <script>${js}<\/script>
+                </body>
+                </html>
+            `;
+
+            navigator.clipboard.writeText(fullHtml).then(() => {
+                alert('HTML kopyalandı!');
+            });
+        }
+
+        function loadHtmlFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.html';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('html-input').value = e.target.result;
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function loadHtmlFromUrl() {
+            const url = prompt('HTML dosyasının URL\'sini girin:');
+            if (url) {
+                fetch(url)
+                    .then(response => response.text())
+                    .then(data => {
+                        document.getElementById('html-input').value = data;
+                    })
+                    .catch(() => alert('URL yüklenirken bir hata oluştu.'));
+            }
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>
