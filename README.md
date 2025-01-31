@@ -2,7 +2,7 @@
 
 Bu proje, HTML, CSS ve JavaScript kodlarınızı hızlıca test etmenizi sağlayan bir web tabanlı kod editörüdür. Gerçek zamanlı önizleme, tam ekran modu, görsel kaydetme ve daha birçok özellik içerir.
 
-![Örnek Görsel]([https://via.placeholder.com/800x400](https://raw.githubusercontent.com/mutix31/Html-code-tester/refs/heads/main/Screenshot_2025-02-01-01-25-49-472_com.android.chrome.png)) <!-- Proje ekran görüntüsü ekleyin -->
+![Örnek Görsel](https://raw.githubusercontent.com/mutix31/Html-code-tester/refs/heads/main/Screenshot_2025-02-01-01-25-49-472_com.android.chrome.png) <!-- Proje ekran görüntüsü ekleyin -->
 
 ## Özellikler ✨
 - **Gerçek Zamanlı Önizleme** 🚀
